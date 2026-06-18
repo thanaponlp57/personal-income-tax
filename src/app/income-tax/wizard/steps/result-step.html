@@ -1,0 +1,74 @@
+<h2 class="h6 mb-3">ขั้นที่ 5 — สรุปผล</h2>
+@if (store.computation(); as c) {
+  @if (c.balance > 0) {
+    <div class="alert alert-danger" id="resultCard">
+      <h3 class="h6 mb-1">มีภาษีต้องชำระเพิ่ม</h3>
+      <span class="fs-3 fw-bold">{{ c.balance | number: '1.0-0' }} บาท</span>
+    </div>
+  } @else if (c.balance < 0) {
+    <div class="alert alert-success" id="resultCard">
+      <h3 class="h6 mb-1">มีสิทธิขอคืนภาษี</h3>
+      <span class="fs-3 fw-bold">{{ -c.balance | number: '1.0-0' }} บาท</span>
+    </div>
+  } @else {
+    <div class="alert alert-secondary" id="resultCard">
+      <h3 class="h6 mb-0">ไม่มีภาษีต้องชำระเพิ่มหรือขอคืน</h3>
+    </div>
+  }
+  <p class="small text-secondary mb-0">
+    ภาษีที่คำนวณได้ {{ c.tax | number: '1.0-0' }} บาท − หัก ณ ที่จ่าย
+    {{ store.income()?.withholdingTax | number: '1.0-0' }} บาท
+  </p>
+}
+<p class="text-secondary small mt-3">
+  * เครื่องมือสาธิตสำหรับ portfolio เท่านั้น ไม่ใช่การยื่นแบบจริงและไม่ใช่คำแนะนำทางภาษี
+</p>
+
+<!-- Submit แบบไป BE + รับ receipt (task-07) -->
+@if (submitState() === 'idle') {
+  <div class="mt-4 d-print-none">
+    <button class="btn btn-primary" type="button" (click)="onSubmit()">
+      ส่งแบบแสดงรายการ (ภ.ง.ด.91)
+    </button>
+  </div>
+}
+@if (submitState() === 'submitting') {
+  <p class="mt-4 text-muted">กำลังส่ง...</p>
+}
+@if (submitState() === 'done' && beComputation(); as comp) {
+  <div class="mt-4 alert alert-success">
+    <strong>ส่งสำเร็จ</strong> — ภาษีที่ BE คำนวณ: {{ comp.tax | number }} บาท
+    (ยอดชำระ/คืน: {{ comp.balance | number }} บาท)
+  </div>
+  @if (receiptState() === 'waiting') {
+    <p class="text-muted">กำลังสร้าง Receipt PDF...</p>
+  }
+  @if (receiptState() === 'ready') {
+    <button class="btn btn-outline-secondary d-print-none" type="button" (click)="onDownloadReceipt()">
+      ดาวน์โหลด Receipt PDF
+    </button>
+  }
+  @if (receiptState() === 'failed') {
+    <p class="text-warning">ไม่สามารถสร้าง PDF ได้ในขณะนี้ กรุณาลองใหม่ภายหลัง</p>
+  }
+}
+@if (submitState() === 'error') {
+  <div class="mt-4 alert alert-danger">
+    เกิดข้อผิดพลาดในการส่ง กรุณาลองใหม่
+    <button class="btn btn-sm btn-danger ms-2 d-print-none" type="button" (click)="onSubmit()">
+      ลองใหม่
+    </button>
+  </div>
+}
+<hr />
+<div class="d-flex gap-2 d-print-none">
+  <button class="btn btn-outline-primary btn-sm" type="button" (click)="onPrint()">
+    <i class="bi bi-printer me-1" aria-hidden="true"></i>พิมพ์สรุป
+  </button>
+  <button class="btn btn-outline-secondary btn-sm" type="button" (click)="onRestart()">
+    เริ่มกรอกใหม่ (ลบข้อมูลทั้งหมด)
+  </button>
+</div>
+<div class="d-flex justify-content-between mt-4 d-print-none">
+  <button class="btn btn-outline-secondary" type="button" (click)="onBack()">← ย้อนกลับ</button>
+</div>

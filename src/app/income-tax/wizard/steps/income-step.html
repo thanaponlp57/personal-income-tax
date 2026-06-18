@@ -1,0 +1,90 @@
+<h2 class="h6 mb-3">ขั้นที่ 2 — เงินได้ตามมาตรา 40(1) (ทั้งปีภาษี)</h2>
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label" for="salary">เงินเดือนรวมทั้งปี (บาท)</label>
+      <input
+        class="form-control"
+        id="salary"
+        type="text"
+        formControlName="salary"
+        appMoney
+        autocomplete="off"
+        [class.is-invalid]="
+          form.controls.salary.invalid &&
+          (form.controls.salary.dirty || form.controls.salary.touched)
+        "
+      />
+      <div class="invalid-feedback">กรุณากรอกเงินเดือน (มากกว่า 0)</div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="bonus">โบนัส (บาท)</label>
+      <input
+        class="form-control"
+        id="bonus"
+        type="text"
+        formControlName="bonus"
+        appMoney
+        placeholder="0"
+        autocomplete="off"
+      />
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="otherIncome">
+        เงินได้อื่นจากนายจ้าง — ค่าตำแหน่ง/สวัสดิการที่เป็นเงิน (บาท)
+      </label>
+      <input
+        class="form-control"
+        id="otherIncome"
+        type="text"
+        formControlName="otherIncome"
+        appMoney
+        placeholder="0"
+        autocomplete="off"
+      />
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="withholdingTax">
+        ภาษีหัก ณ ที่จ่าย ตามหนังสือรับรอง 50 ทวิ (บาท)
+      </label>
+      <input
+        class="form-control"
+        id="withholdingTax"
+        type="text"
+        formControlName="withholdingTax"
+        appMoney
+        placeholder="0"
+        autocomplete="off"
+        [class.is-invalid]="
+          form.errors?.['withholdingExceedsIncome'] &&
+          (form.controls.withholdingTax.dirty || form.controls.withholdingTax.touched)
+        "
+      />
+      <div class="invalid-feedback">ต้องไม่เกินเงินได้รวม</div>
+    </div>
+  </div>
+  <div class="alert alert-info mt-3 py-2" id="incomePreview">
+    เงินได้พึงประเมินรวม: <strong>{{ totalIncome() | number: '1.0-0' }}</strong> บาท ·
+    หักค่าใช้จ่ายได้: <strong>{{ expense() | number: '1.0-0' }}</strong> บาท ({{
+      expenseRatePercent
+    }}% ไม่เกิน {{ expenseMax | number }})
+  </div>
+  <div class="d-flex justify-content-between align-items-center mt-4">
+    <button class="btn btn-outline-secondary" type="button" (click)="onBack()">← ย้อนกลับ</button>
+    <div class="d-flex align-items-center gap-2">
+      @switch (store.draftSaveState()) {
+        @case ('saving') {
+          <span class="text-muted small">กำลังบันทึก...</span>
+        }
+        @case ('saved') {
+          <span class="text-success small">บันทึกร่างแล้ว ✓</span>
+        }
+        @case ('error') {
+          <span class="text-danger small">บันทึกร่างไม่สำเร็จ</span>
+        }
+      }
+      <button class="btn btn-outline-secondary" type="button" (click)="onSaveDraft()">บันทึกร่าง</button>
+      <button class="btn btn-primary" type="submit">ถัดไป →</button>
+    </div>
+  </div>
+</form>

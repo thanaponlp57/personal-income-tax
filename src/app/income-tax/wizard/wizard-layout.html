@@ -1,0 +1,29 @@
+<main class="container py-4">
+  <div class="card wizard-card mx-auto shadow-sm">
+    <div class="card-header bg-white py-3">
+      <h1 class="h5 mb-1">แบบแสดงรายการภาษีเงินได้บุคคลธรรมดา ภ.ง.ด.91 — ปีภาษี 2568</h1>
+      <p class="text-secondary small mb-0">
+        สำหรับผู้มีเงินได้จากการจ้างแรงงาน ตามมาตรา 40(1) เพียงอย่างเดียว (เงินเดือน โบนัส
+        ค่าตำแหน่ง สวัสดิการที่เป็นเงิน)
+      </p>
+    </div>
+    <div class="card-body">
+      <nav class="stepper mb-4 d-print-none" aria-label="ขั้นตอนการกรอกแบบ">
+        @for (step of steps(); track step.path) {
+          @if (step.done) {
+            <a class="step done" [routerLink]="step.path">
+              <span class="circle"><i class="bi bi-check-lg" aria-hidden="true"></i></span>
+              <span class="label d-block">{{ step.label }}</span>
+            </a>
+          } @else {
+            <div class="step" [class.active]="step.active">
+              <span class="circle">{{ step.number }}</span>
+              <span class="label d-block">{{ step.label }}</span>
+            </div>
+          }
+        }
+      </nav>
+      <router-outlet />
+    </div>
+  </div>
+</main>

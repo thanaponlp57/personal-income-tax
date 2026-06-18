@@ -1,0 +1,111 @@
+<h2 class="h6 mb-3">ขั้นที่ 4 — ตรวจสอบข้อมูลและการคำนวณ</h2>
+@if (store.computation(); as c) {
+  <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-2 mt-3">
+    <h3 class="h6 text-secondary mb-0">ผู้มีเงินได้</h3>
+    <a class="btn btn-sm btn-outline-primary d-print-none" routerLink="../taxpayer">แก้ไข</a>
+  </div>
+  <dl class="row mb-0">
+    <dt class="col-5 col-sm-4 fw-normal">ชื่อ-นามสกุล</dt>
+    <dd class="col-7 col-sm-8 fw-semibold">
+      {{ store.profile()?.firstName }} {{ store.profile()?.lastName }}
+    </dd>
+    <dt class="col-5 col-sm-4 fw-normal">เลขประจำตัวผู้เสียภาษี</dt>
+    <dd class="col-7 col-sm-8 fw-semibold">{{ store.profile()?.taxId }}</dd>
+    <dt class="col-5 col-sm-4 fw-normal">สถานภาพ</dt>
+    <dd class="col-7 col-sm-8 fw-semibold">{{ maritalText() }}</dd>
+  </dl>
+
+  <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-2 mt-3">
+    <h3 class="h6 text-secondary mb-0">เงินได้ตามมาตรา 40(1)</h3>
+    <a class="btn btn-sm btn-outline-primary d-print-none" routerLink="../income">แก้ไข</a>
+  </div>
+  <dl class="row mb-0">
+    <dt class="col-5 col-sm-4 fw-normal">เงินได้พึงประเมินรวม</dt>
+    <dd class="col-7 col-sm-8 fw-semibold">{{ c.totalIncome | number: '1.0-0' }} บาท</dd>
+    <dt class="col-5 col-sm-4 fw-normal">ภาษีหัก ณ ที่จ่าย</dt>
+    <dd class="col-7 col-sm-8 fw-semibold">
+      {{ store.income()?.withholdingTax | number: '1.0-0' }} บาท
+    </dd>
+  </dl>
+
+  <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-2 mt-3">
+    <h3 class="h6 text-secondary mb-0">ค่าลดหย่อน</h3>
+    <a class="btn btn-sm btn-outline-primary d-print-none" routerLink="../deductions">แก้ไข</a>
+  </div>
+  <dl class="row mb-0">
+    <dt class="col-5 col-sm-4 fw-normal">ค่าลดหย่อนรวมที่ใช้ได้</dt>
+    <dd class="col-7 col-sm-8 fw-semibold">{{ c.allowancesTotal | number: '1.0-0' }} บาท</dd>
+  </dl>
+
+  <h3 class="h6 text-secondary mt-4">การคำนวณภาษี</h3>
+  <table class="table table-sm align-middle" id="calcTable">
+    <tbody>
+      <tr>
+        <td>เงินได้พึงประเมิน (มาตรา 40(1))</td>
+        <td class="text-end">{{ c.totalIncome | number: '1.0-0' }}</td>
+      </tr>
+      <tr class="text-danger">
+        <td>หัก ค่าใช้จ่าย ({{ expenseRatePercent }}% ไม่เกิน {{ expenseMax | number }})</td>
+        <td class="text-end">{{ -c.expense | number: '1.0-0' }}</td>
+      </tr>
+      @for (item of visibleAllowances(); track item.label) {
+        <tr class="text-danger">
+          <td>หัก {{ item.label }}</td>
+          <td class="text-end">
+            {{ -item.used | number: '1.0-0' }}
+            @if (item.capped) {
+              <!-- UX-09: โดนตัดเพดานต้องบอกยอดที่กรอกจริง ไม่ cap เงียบ ๆ -->
+              <div class="small">จำกัดเพดาน — จากที่กรอก {{ item.entered | number: '1.0-0' }}</div>
+            }
+          </td>
+        </tr>
+      }
+      <tr class="fw-bold">
+        <td>เงินได้สุทธิ</td>
+        <td class="text-end">{{ c.netIncome | number: '1.0-0' }}</td>
+      </tr>
+      <tr class="fw-bold">
+        <td>ภาษีที่คำนวณได้</td>
+        <td class="text-end">{{ c.tax | number: '1.0-0' }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 class="h6 text-secondary">ภาษีรายขั้น (อัตราก้าวหน้า)</h3>
+  <table class="table table-sm table-striped align-middle" id="bracketTable">
+    <thead>
+      <tr>
+        <th>ขั้นเงินได้สุทธิ</th>
+        <th class="text-end">ยอดในขั้น</th>
+        <th class="text-end">อัตรา</th>
+        <th class="text-end">ภาษี</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (portion of c.bracketPortions; track portion.from) {
+        <tr>
+          <td>
+            {{ portion.from | number: '1.0-0' }} –
+            @if (portion.upTo === infinity) {
+              ขึ้นไป
+            } @else {
+              {{ portion.upTo | number: '1.0-0' }}
+            }
+          </td>
+          <td class="text-end">{{ portion.amount | number: '1.0-0' }}</td>
+          <td class="text-end">{{ portion.rate * 100 | number: '1.0-0' }}%</td>
+          <td class="text-end">{{ portion.tax | number: '1.0-0' }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="4" class="text-secondary">เงินได้สุทธิอยู่ในเกณฑ์ยกเว้นภาษี</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <div class="d-flex justify-content-between mt-4 d-print-none">
+    <button class="btn btn-outline-secondary" type="button" (click)="onBack()">← ย้อนกลับ</button>
+    <button class="btn btn-primary" type="button" (click)="onConfirm()">ยืนยันการคำนวณ →</button>
+  </div>
+}

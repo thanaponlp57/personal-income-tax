@@ -1,0 +1,14 @@
+services:
+  shell:
+    build:
+      context: .
+      dockerfile: docker/shell/Dockerfile
+    ports:
+      - "4200:80"
+
+  personal-income-tax:
+    build:
+      context: .
+      dockerfile: docker/personal-income-tax/Dockerfile
+    ports:
+      - "4201:80"

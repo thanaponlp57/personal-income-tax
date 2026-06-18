@@ -1,0 +1,7 @@
+<header style="display:flex;justify-content:flex-end;padding:8px 16px;gap:12px;background:#f8f9fa;border-bottom:1px solid #dee2e6">
+  @if (auth.currentUser(); as user) {
+    <span>{{ user.fullName || user.username }}</span>
+    <button (click)="logout()">ออกจากระบบ</button>
+  }
+</header>
+<router-outlet />

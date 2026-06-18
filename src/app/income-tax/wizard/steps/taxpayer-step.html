@@ -1,0 +1,117 @@
+<h2 class="h6 mb-3">ขั้นที่ 1 — ข้อมูลผู้มีเงินได้</h2>
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label" for="firstName">ชื่อ</label>
+      <input
+        class="form-control"
+        id="firstName"
+        formControlName="firstName"
+        autocomplete="given-name"
+        [class.is-invalid]="
+          form.controls.firstName.invalid &&
+          (form.controls.firstName.dirty || form.controls.firstName.touched)
+        "
+      />
+      <div class="invalid-feedback">กรุณากรอกชื่อ</div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="lastName">นามสกุล</label>
+      <input
+        class="form-control"
+        id="lastName"
+        formControlName="lastName"
+        autocomplete="family-name"
+        [class.is-invalid]="
+          form.controls.lastName.invalid &&
+          (form.controls.lastName.dirty || form.controls.lastName.touched)
+        "
+      />
+      <div class="invalid-feedback">กรุณากรอกนามสกุล</div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="taxId">เลขประจำตัวผู้เสียภาษีอากร (13 หลัก)</label>
+      <input
+        class="form-control"
+        id="taxId"
+        formControlName="taxId"
+        appTaxId
+        inputmode="numeric"
+        autocomplete="off"
+        [class.is-invalid]="
+          form.controls.taxId.invalid && (form.controls.taxId.dirty || form.controls.taxId.touched)
+        "
+      />
+      <div class="form-text">เช่น 1-2345-67890-12-3 (พิมพ์หรือวางแบบมีขีดได้)</div>
+      <div class="invalid-feedback">ต้องเป็นตัวเลข 13 หลัก</div>
+    </div>
+    <div class="col-12">
+      <label class="form-label d-block">สถานภาพ</label>
+      <div class="form-check form-check-inline">
+        <input
+          class="form-check-input"
+          type="radio"
+          formControlName="maritalStatus"
+          id="single"
+          value="single"
+        />
+        <label class="form-check-label" for="single">โสด</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input
+          class="form-check-input"
+          type="radio"
+          formControlName="maritalStatus"
+          id="married"
+          value="married"
+        />
+        <label class="form-check-label" for="married">สมรส</label>
+      </div>
+    </div>
+    @if (isMarried()) {
+      <div class="col-12">
+        <label class="form-label d-block">คู่สมรสมีเงินได้หรือไม่</label>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="radio"
+            formControlName="spouseHasIncome"
+            id="spouseNo"
+            [value]="false"
+          />
+          <label class="form-check-label" for="spouseNo">
+            ไม่มีเงินได้ (ลดหย่อนได้ {{ spouseAllowance | number }})
+          </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="radio"
+            formControlName="spouseHasIncome"
+            id="spouseYes"
+            [value]="true"
+          />
+          <label class="form-check-label" for="spouseYes">มีเงินได้ (แยกยื่น)</label>
+        </div>
+      </div>
+    }
+  </div>
+  <div class="d-flex justify-content-between align-items-center mt-4">
+    <button class="btn btn-outline-secondary" type="button" disabled>← ย้อนกลับ</button>
+    <div class="d-flex align-items-center gap-2">
+      @switch (store.draftSaveState()) {
+        @case ('saving') {
+          <span class="text-muted small">กำลังบันทึก...</span>
+        }
+        @case ('saved') {
+          <span class="text-success small">บันทึกร่างแล้ว ✓</span>
+        }
+        @case ('error') {
+          <span class="text-danger small">บันทึกร่างไม่สำเร็จ</span>
+        }
+      }
+      <button class="btn btn-outline-secondary" type="button" (click)="onSaveDraft()">บันทึกร่าง</button>
+      <button class="btn btn-primary" type="submit">ถัดไป →</button>
+    </div>
+  </div>
+</form>

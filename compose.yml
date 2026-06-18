@@ -1,0 +1,13 @@
+services:
+  fe:
+    build: .
+    ports:
+      - "4200:4200"
+      - "4201:4201"
+    volumes:
+      - ./ssl:/etc/nginx/ssl:ro
+    # nginx reverse-proxy (task-10) resolve upstream ตอน startup → container ต้องรู้จัก
+    # taxbe.local ไม่งั้น start ไม่ขึ้น. FE+BE อยู่เครื่องเดียวกัน → ชี้ไป host ผ่าน host-gateway
+    # (BE filing-service publish 8080 ที่ host) — ไม่ต้อง hardcode LAN IP ที่เปลี่ยนตาม Wi-Fi
+    extra_hosts:
+      - "taxbe.local:host-gateway"

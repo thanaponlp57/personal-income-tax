@@ -1,0 +1,175 @@
+<h2 class="h6 mb-3">ขั้นที่ 3 — ค่าลดหย่อน</h2>
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div class="alert alert-secondary py-2 small">
+    ลดหย่อนอัตโนมัติ: ส่วนตัว <strong>{{ caps.personal | number }}</strong> บาท
+    @if (spouseEligible()) {
+      <span id="autoSpouse">· คู่สมรสไม่มีเงินได้ <strong>{{ caps.spouse | number }}</strong> บาท</span>
+    }
+  </div>
+
+  <h3 class="h6 text-secondary mt-3">ครอบครัว</h3>
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label" for="children">จำนวนบุตร</label>
+      <input
+        class="form-control"
+        id="children"
+        type="number"
+        formControlName="children"
+        min="0"
+        [max]="childrenMax"
+        [class.is-invalid]="
+          form.controls.children.invalid &&
+          (form.controls.children.dirty || form.controls.children.touched)
+        "
+      />
+      <div class="form-text">ลดหย่อนคนละ {{ caps.childEach | number }}</div>
+      <div class="invalid-feedback">ต้องเป็นจำนวนเต็ม 0–{{ childrenMax }}</div>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="parents">บิดามารดาที่อุปการะ</label>
+      <input
+        class="form-control"
+        id="parents"
+        type="number"
+        formControlName="parents"
+        min="0"
+        [max]="caps.parentsMax"
+        [class.is-invalid]="
+          form.controls.parents.invalid &&
+          (form.controls.parents.dirty || form.controls.parents.touched)
+        "
+      />
+      <div class="form-text">
+        ลดหย่อนคนละ {{ caps.parentEach | number }} สูงสุด {{ caps.parentsMax }} คน
+      </div>
+      <div class="invalid-feedback">ต้องเป็นจำนวนเต็ม 0–{{ caps.parentsMax }}</div>
+    </div>
+  </div>
+
+  <h3 class="h6 text-secondary mt-4">ประกันและกองทุน</h3>
+  <div class="row g-3 align-fields">
+    <div class="col-md-4">
+      <label class="form-label" for="socialSecurity">ประกันสังคม</label>
+      <input
+        class="form-control"
+        id="socialSecurity"
+        type="text"
+        formControlName="socialSecurity"
+        appMoney
+        placeholder="0"
+        autocomplete="off"
+      />
+      <div class="form-text">ตามจ่ายจริง ไม่เกิน {{ caps.socialSecurity | number }}</div>
+      @if (cappedItem('ประกันสังคม'); as item) {
+        <div class="text-warning-emphasis hint-cap small">
+          ใช้ได้จริง {{ item.used | number: '1.0-0' }} บาท (เกินเพดาน)
+        </div>
+      }
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" for="lifeInsurance">เบี้ยประกันชีวิต</label>
+      <input
+        class="form-control"
+        id="lifeInsurance"
+        type="text"
+        formControlName="lifeInsurance"
+        appMoney
+        placeholder="0"
+        autocomplete="off"
+      />
+      <div class="form-text">ไม่เกิน {{ caps.lifeInsurance | number }}</div>
+      @if (cappedItem('เบี้ยประกันชีวิต'); as item) {
+        <div class="text-warning-emphasis hint-cap small">
+          ใช้ได้จริง {{ item.used | number: '1.0-0' }} บาท (เกินเพดาน)
+        </div>
+      }
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" for="providentFund">กองทุนสำรองเลี้ยงชีพ (PVD)</label>
+      <input
+        class="form-control"
+        id="providentFund"
+        type="text"
+        formControlName="providentFund"
+        appMoney
+        placeholder="0"
+        autocomplete="off"
+      />
+      <div class="form-text">
+        เพดาน {{ pvdRatePercent }}% ของค่าจ้าง และไม่เกิน {{ caps.pvdMax | number }}
+      </div>
+      @if (cappedItem('กองทุนสำรองเลี้ยงชีพ'); as item) {
+        <div class="text-warning-emphasis hint-cap small">
+          ใช้ได้จริง {{ item.used | number: '1.0-0' }} บาท (เกินเพดาน)
+        </div>
+      }
+    </div>
+  </div>
+
+  <h3 class="h6 text-secondary mt-4">อื่น ๆ</h3>
+  <div class="row g-3 align-fields">
+    <div class="col-md-6">
+      <label class="form-label" for="homeLoanInterest">ดอกเบี้ยกู้ยืมที่อยู่อาศัย</label>
+      <input
+        class="form-control"
+        id="homeLoanInterest"
+        type="text"
+        formControlName="homeLoanInterest"
+        appMoney
+        placeholder="0"
+        autocomplete="off"
+      />
+      <div class="form-text">ไม่เกิน {{ caps.homeLoan | number }}</div>
+      @if (cappedItem('ดอกเบี้ยกู้ยืมที่อยู่อาศัย'); as item) {
+        <div class="text-warning-emphasis hint-cap small">
+          ใช้ได้จริง {{ item.used | number: '1.0-0' }} บาท (เกินเพดาน)
+        </div>
+      }
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="donation">เงินบริจาคทั่วไป</label>
+      <input
+        class="form-control"
+        id="donation"
+        type="text"
+        formControlName="donation"
+        appMoney
+        placeholder="0"
+        autocomplete="off"
+      />
+      <div class="form-text">
+        เพดาน {{ donationRatePercent }}% ของเงินได้หลังหักค่าใช้จ่ายและค่าลดหย่อนอื่น
+      </div>
+      @if (cappedItem('เงินบริจาคทั่วไป'); as item) {
+        <div class="text-warning-emphasis hint-cap small">
+          ใช้ได้จริง {{ item.used | number: '1.0-0' }} บาท (เกินเพดาน)
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="alert alert-info mt-3 py-2">
+    ค่าลดหย่อนรวมที่ใช้ได้:
+    <strong id="allowTotal">{{ allowances().total | number: '1.0-0' }}</strong> บาท
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mt-4">
+    <button class="btn btn-outline-secondary" type="button" (click)="onBack()">← ย้อนกลับ</button>
+    <div class="d-flex align-items-center gap-2">
+      @switch (store.draftSaveState()) {
+        @case ('saving') {
+          <span class="text-muted small">กำลังบันทึก...</span>
+        }
+        @case ('saved') {
+          <span class="text-success small">บันทึกร่างแล้ว ✓</span>
+        }
+        @case ('error') {
+          <span class="text-danger small">บันทึกร่างไม่สำเร็จ</span>
+        }
+      }
+      <button class="btn btn-outline-secondary" type="button" (click)="onSaveDraft()">บันทึกร่าง</button>
+      <button class="btn btn-primary" type="submit">ถัดไป →</button>
+    </div>
+  </div>
+</form>
