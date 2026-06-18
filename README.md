@@ -1,4 +1,5 @@
 # Personal Income Tax — Micro-Frontend (P.N.D.91)
+** (Example project only - not for actual tax filing)
 
 > A web app to calculate and file Thai personal income tax (P.N.D.91) with a 5-step wizard.
 > Built with **Angular 22 (zoneless + signals)** in a **Micro-Frontend (Native Federation)** architecture,
